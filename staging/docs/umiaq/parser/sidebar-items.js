@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["form","matcher","prefilter"]};
+window.SIDEBAR_ITEMS = {"mod":["form","matcher","prefilter","utils"]};

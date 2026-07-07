@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["FormPart"],"struct":["Alphagram","ParsedForm"],"type":["PResult"]};
+window.SIDEBAR_ITEMS = {"enum":["FormPart"],"fn":["anagram","charset","consonant","dot","equation_part","expand_charset","lc_letter_to_num","literal","parser_one_char_inner","rev_ref","star","var_ref","vowel"],"struct":["Alphagram","ParsedForm"],"type":["PResult"]};

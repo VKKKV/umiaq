@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["match_equation_all","match_equation_exists"]};
+window.SIDEBAR_ITEMS = {"fn":["get_rest_if_valid_prefix","get_reversed_or_not","is_valid_binding","match_equation_all","match_equation_exists","match_equation_internal"],"struct":["HelperParams"]};

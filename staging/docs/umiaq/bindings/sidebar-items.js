@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Bindings"]};
+window.SIDEBAR_ITEMS = {"constant":["ENTRY_SENTINEL","ENTRY_SENTINEL_INDEX","NUM_SLOTS"],"fn":["char_to_index"],"struct":["Bindings"]};

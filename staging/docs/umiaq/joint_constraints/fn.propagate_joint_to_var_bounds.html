@@ -1,0 +1,70 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Attempt to tighten per-variable length bounds using information from joint constraints."><title>propagate_joint_to_var_bounds in umiaq::joint_constraints - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="umiaq" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">propagate_joint_to_var_bounds</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../umiaq/index.html">umiaq</a><span class="version">0.5.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">propagate_<wbr>joint_<wbr>to_<wbr>var_<wbr>bounds</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#overview" title="Overview">Overview</a></li><li><a href="#example-exact-propagation-eq" title="Example: Exact Propagation (EQ)">Example: Exact Propagation (EQ)</a></li><li><a href="#example-interval-tightening-eq" title="Example: Interval Tightening (EQ)">Example: Interval Tightening (EQ)</a></li><li><a href="#example-one-sided-tightening-gele" title="Example: One-sided Tightening (GE/LE)">Example: One-sided Tightening (GE/LE)</a></li><li><a href="#circuit-breaker-pattern" title="Circuit-Breaker Pattern">Circuit-Breaker Pattern</a></li><li><a href="#algorithm" title="Algorithm">Algorithm</a></li><li><a href="#soundness" title="Soundness">Soundness</a></li><li><a href="#performance-impact" title="Performance Impact">Performance Impact</a></li><li><a href="#errors" title="Errors">Errors</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="index.html">In umiaq::<wbr>joint_<wbr>constraints</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">umiaq</a>::<wbr><a href="index.html">joint_constraints</a></div><h1>Function <span class="fn">propagate_<wbr>joint_<wbr>to_<wbr>var_<wbr>bounds</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/umiaq/joint_constraints.rs.html#467-592">Source</a> </span></div><pre class="rust item-decl"><code>pub fn propagate_joint_to_var_bounds(
+    vcs: &amp;mut <a class="struct" href="../constraints/struct.VarConstraints.html" title="struct umiaq::constraints::VarConstraints">VarConstraints</a>,
+    jcs: &amp;<a class="struct" href="struct.JointConstraints.html" title="struct umiaq::joint_constraints::JointConstraints">JointConstraints</a>,
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>, <a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;<a class="enum" href="../errors/enum.ParseError.html" title="enum umiaq::errors::ParseError">ParseError</a>&gt;&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Attempt to tighten per-variable length bounds using information from joint constraints.</p>
+<h2 id="overview"><a class="doc-anchor" href="#overview">§</a>Overview</h2>
+<p>This propagation step converts joint range constraints (=, &lt;=, &gt;=, &lt;, &gt;) over groups of
+variables into tighter individual variable bounds, potentially dramatically reducing the
+search space. NE constraints are skipped (they don’t produce a contiguous interval).</p>
+<h2 id="example-exact-propagation-eq"><a class="doc-anchor" href="#example-exact-propagation-eq">§</a>Example: Exact Propagation (EQ)</h2><div class="example-wrap"><pre class="language-text"><code>Joint constraint: |ABCDEFGHIJKLMN| = 14
+Default per-var bounds: each ≥ 1
+Sum of mins: 14 × 1 = 14 = target
+Conclusion: Every variable must be exactly length 1</code></pre></div>
+<p>This allows the solver to avoid exploring assignments where any variable is length &gt; 1.</p>
+<h2 id="example-interval-tightening-eq"><a class="doc-anchor" href="#example-interval-tightening-eq">§</a>Example: Interval Tightening (EQ)</h2><div class="example-wrap"><pre class="language-text"><code>joint constraint: |ABC| = 10
+initial bounds: A ∈ [1,∞), B ∈ [1,∞), C ∈ [1,∞)
+
+for variable A:
+  • min for |A| = max(1, 10 - (&quot;∞&quot; + &quot;∞&quot;)) = 1  (i.e., no tightening)
+  • max for |A| = min(&quot;∞&quot;, 10 - (1 + 1)) = 8
+
+result: |A| ∈ [1,8], |B| ∈ [1,8], |C| ∈ [1,8]</code></pre></div>
+<p>This reduces the search space from “∞“³ to 8³ = 512 possibilities.</p>
+<h2 id="example-one-sided-tightening-gele"><a class="doc-anchor" href="#example-one-sided-tightening-gele">§</a>Example: One-sided Tightening (GE/LE)</h2><div class="example-wrap"><pre class="language-text"><code>joint constraint: |AB| &gt;= 5, A ∈ [1,3], B ∈ [1,3]
+for A: new min = max(1, 5 - max(B)) = max(1, 5 - 3) = 2
+for B: new min = max(1, 5 - max(A)) = max(1, 5 - 3) = 2
+result: A ∈ [2,3], B ∈ [2,3]
+
+joint constraint: |AB| &lt;= 8, A ∈ [1,∞), B ∈ [2,∞)
+for A: new max = min(∞, 8 - min(B)) = 8 - 2 = 6
+for B: new max = min(∞, 8 - min(A)) = 8 - 1 = 7
+result: A ∈ [1,6], B ∈ [2,7]</code></pre></div><h2 id="circuit-breaker-pattern"><a class="doc-anchor" href="#circuit-breaker-pattern">§</a>Circuit-Breaker Pattern</h2>
+<p>Before attempting potentially expensive search, this function fails fast when constraints are
+provably unsatisfiable:</p>
+<ul>
+<li>if <code>sum(mins) &gt; T_max</code> (minimum required exceeds upper bound)</li>
+<li>if <code>sum(maxes) &lt; T_min</code> (maximum possible falls short of lower bound)</li>
+</ul>
+<p>Example contradiction:</p>
+<div class="example-wrap"><pre class="language-text"><code>|AB| = 5 with |A| ≥ 3, |B| ≥ 4
+sum of mins: 3 + 4 = 7 &gt; 5</code></pre></div><h2 id="algorithm"><a class="doc-anchor" href="#algorithm">§</a>Algorithm</h2>
+<p>For each range constraint with interval <code>[T_min, T_max]</code>:</p>
+<ol>
+<li><strong>Early fail</strong>: if <code>sum(mins) &gt; T_max</code> or <code>sum(maxes) &lt; T_min</code>, return <code>ContradictoryBounds</code></li>
+<li><strong>Exact by mins</strong>: if <code>sum(mins) == T_max</code>, set all vars to their min (exact)</li>
+<li><strong>Exact by maxes</strong>: if <code>sum(maxes) == T_min</code> (finite), set all vars to their max (exact)</li>
+<li><strong>Generic tightening</strong>: otherwise, for each variable Vi:
+<ul>
+<li>new min for Vi = max(current min, <code>T_min</code> - Σ other maxes)</li>
+<li>new max for Vi = min(current max, <code>T_max</code> - Σ other mins)</li>
+<li>if new min &gt; new max, fail with <code>ContradictoryBounds</code></li>
+</ul>
+</li>
+</ol>
+<p>GE/GT constraints have <code>T_max = ∞</code>, so step 4 only tightens lower bounds.
+LE/LT constraints have <code>T_min = 1</code>, so step 4 only tightens upper bounds.</p>
+<h2 id="soundness"><a class="doc-anchor" href="#soundness">§</a>Soundness</h2>
+<p>This propagation is <strong>sound</strong> (never removes feasible solutions). It only tightens
+bounds based on provable arithmetic constraints.</p>
+<h2 id="performance-impact"><a class="doc-anchor" href="#performance-impact">§</a>Performance Impact</h2>
+<p>This is a critical optimization that often eliminates large amounts of search space:</p>
+<ul>
+<li><strong>Best case</strong>: reduces “∞ⁿ” search space to finite bounds</li>
+<li><strong>Common case</strong>: tightens [1,∞) to [1,k] for small k</li>
+<li><strong>Worst case</strong>: no tightening (sum(mins) &lt; T &lt; sum(maxes))</li>
+</ul>
+<p>Especially effective for long chains like <code>|ABCDEFGH| = 15</code> where default bounds
+would allow exponential combinations.</p>
+<h2 id="errors"><a class="doc-anchor" href="#errors">§</a>Errors</h2>
+<p>Returns <code>Err(ContradictoryBounds)</code> if the constraints are provably unsatisfiable.</p>
+</div></details></section></div></main></body></html>

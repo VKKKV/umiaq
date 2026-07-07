@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Parse a complex constraint of the form `X=(...)`."><title>get_complex_constraint in umiaq::complex_constraints - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="umiaq" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">get_complex_constraint</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../umiaq/index.html">umiaq</a><span class="version">0.5.0</span></h2></div><div class="sidebar-elems"><div id="rustdoc-modnav"><h2><a href="index.html">In umiaq::<wbr>complex_<wbr>constraints</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">umiaq</a>::<wbr><a href="index.html">complex_constraints</a></div><h1>Function <span class="fn">get_<wbr>complex_<wbr>constraint</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/umiaq/complex_constraints.rs.html#25-88">Source</a> </span></div><pre class="rust item-decl"><code>pub(crate) fn get_complex_constraint(
+    form: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>,
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;(<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.char.html">char</a>, <a class="struct" href="../constraints/struct.VarConstraint.html" title="struct umiaq::constraints::VarConstraint">VarConstraint</a>), <a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;<a class="enum" href="../errors/enum.ParseError.html" title="enum umiaq::errors::ParseError">ParseError</a>&gt;&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Parse a complex constraint of the form <code>X=(...)</code>.</p>
+<p>The right-hand side may be optionally wrapped in parentheses. Inside:</p>
+<ul>
+<li>
+<p><strong>With a colon</strong> (<code>len_range:literal</code>):</p>
+<ul>
+<li>The part before the colon must be a valid length range (e.g., <code>5-7</code> or <code>3</code>).</li>
+<li>The part after the colon is treated as a literal constraint string.</li>
+<li>Exactly one colon is allowed; more than one yields <code>InvalidComplexConstraint</code>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Without a colon</strong>:</p>
+<ul>
+<li>First try to parse the whole string as a length range. If successful, this
+becomes a pure length constraint.</li>
+<li>Otherwise, treat the string as a literal constraint, with default bounds.</li>
+</ul>
+</li>
+</ul>
+<p>Returns the variable name (single char) and a <code>VarConstraint</code> carrying the
+parsed <code>Bounds</code> and optional literal form string.</p>
+<p>Errors:</p>
+<ul>
+<li><code>InvalidComplexConstraint</code> if the input is malformed (e.g., no <code>=</code>, no variable,
+too many colons, or an unparsable length range when one was expected).</li>
+</ul>
+</div></details></section></div></main></body></html>

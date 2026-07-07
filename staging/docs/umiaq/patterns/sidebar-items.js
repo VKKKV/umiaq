@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FORM_SEPARATOR"],"struct":["EquationContext","Pattern"]};
+window.SIDEBAR_ITEMS = {"constant":["FORM_SEPARATOR","LEN_CMP_PATTERN","NEQ_PATTERN"],"enum":["FormKind"],"fn":["get_malformed_clause_reason"],"static":["LEN_CMP_RE","NEQ_RE"],"struct":["EquationContext","Pattern"]};

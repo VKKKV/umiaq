@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Extreme"],"fn":["form_len_hints_pf","group_constraints_for_form","group_from_joint","weighted_extreme_for_t"],"struct":["FormContext","GroupLenConstraint","PatternLenHints","Row"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["ParseError"]};
+window.SIDEBAR_ITEMS = {"enum":["ParseError"],"fn":["format_error_with_code_and_help"]};
